@@ -1,0 +1,28 @@
+{
+  "name": "automatizacion",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EvangelinaEG/automatizacion.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EvangelinaEG/automatizacion/issues"
+  },
+  "homepage": "https://github.com/EvangelinaEG/automatizacion#readme",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "googleapis": "^171.4.0",
+    "node-cron": "^4.2.1",
+    "puppeteer": "^24.39.1",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.34.6"
+  }
+}

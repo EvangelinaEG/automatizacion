@@ -1,0 +1,14 @@
+node_modules/
+.wwebjs_auth/
+.wwebjs_cache/
+downloads/
+qr.png
+qr_server.png
+deploy.zip
+*.log
+# Archivos sensibles (No recomendados para GitHub público)
+.env
+google-credentials.json
+credentials.json
+llave-bot.pem
+llave-bot.pem
