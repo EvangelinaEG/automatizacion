@@ -7,7 +7,6 @@ const fs = require('fs');
 const GROUP_ID = process.env.WHATSAPP_GROUP_ID;
 
 console.log('Iniciando sistema de automatización...');
-whatsappService.client.initialize();
 
 function getFormattedDate() {
     const d = new Date();
@@ -54,35 +53,15 @@ async function processMinistrations(timeString) {
 cron.schedule('0 9 * * 1-5', async () => {
     console.log('Cron: Ejecutando tarea de las 9:00 am...');
     await processMinistrations('09-00');
-}, {
-    scheduled: true,
-    timezone: "America/Argentina/Buenos_Aires"
 });
 
 // Programación de las 10:00 am de Lunes a Viernes
 cron.schedule('0 10 * * 1-5', async () => {
     console.log('Cron: Ejecutando tarea de las 10:00 am...');
     await processMinistrations('10-00');
-}, {
-    scheduled: true,
-    timezone: "America/Argentina/Buenos_Aires"
 });
 
-// Ejecución manual de recuperación (se ejecuta una vez al iniciar si ya pasó la hora)
-whatsappService.client.on('ready', async () => {
-    const now = new Date().toLocaleString("en-US", {timeZone: "America/Argentina/Buenos_Aires"});
-    const hour = new Date(now).getHours();
-    
-    console.log(`Cliente listo. Hora local actual: ${hour}hs`);
-    
-    if (hour >= 9) {
-        console.log('Ejecutando proceso manual de recuperación para las 9:00 am...');
-        await processMinistrations('09-00');
-    }
-    if (hour >= 10) {
-        console.log('Ejecutando proceso manual de recuperación para las 10:00 am...');
-        await processMinistrations('10-00');
-    }
-});
+// Función auxiliar para forzar la ejecución manual de prueba (opcional)
+// processMinistrations('09-00');
 
-console.log('Scheduler configurado (Lunes a Viernes, 09:00 y 10:00 - Timezone: America/Argentina/Buenos_Aires).');
+console.log('Scheduler configurado (Lunes a Viernes, 09:00 y 10:00). Esperando tareas...');

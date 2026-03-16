@@ -52,6 +52,9 @@ async function runTest(timeString) {
 }
 
 // Ejecutamos la prueba con la hora que le pasemos por comando o por defecto 09-00
+console.log('Iniciando cliente para prueba manual...');
+whatsappService.client.initialize();
+
 whatsappService.client.on('ready', async () => {
     // Cuando whatsapp inicie, corremos el test inmediatamente
     const timeToTest = process.argv[2] || '09-00';

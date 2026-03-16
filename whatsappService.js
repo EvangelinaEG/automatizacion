@@ -10,19 +10,10 @@ const client = new Client({
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
-            '--disable-extensions',
             '--disable-dev-shm-usage',
             '--disable-gpu',
-            '--no-first-run',
-            '--no-zygote'
         ],
-        // executablePath: '/usr/bin/google-chrome' // Removido para que Puppeteer use el suyo
     },
-    userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    webVersionCache: {
-        type: 'remote',
-        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1018.571-alpha.html'
-    }
 });
 
 client.on('qr', (qr) => {
@@ -37,28 +28,12 @@ client.on('qr', (qr) => {
     });
 });
 
-client.on('ready', async () => {
-    console.log('¡Cliente de WhatsApp está listo!');
-    
-    console.log('\n--- LISTA DE TUS GRUPOS ---');
-    console.log('Busca el grupo al que deseas enviar y copia su ID en el archivo .env\n');
-    try {
-        const chats = await client.getChats();
-        const groups = chats.filter(chat => chat.isGroup);
-        if (groups.length === 0) {
-            console.log('No tienes grupos en esta cuenta.');
-        } else {
-            for (const group of groups) {
-                console.log(`Nombre: "${group.name}"  =>  ID: ${group.id._serialized}`);
-            }
-        }
-        console.log('---------------------------\n');
-    } catch (err) {
-        console.error('Error al obtener la lista de grupos:', err);
-    }
+client.on('ready', () => {
+    console.log('¡Cliente de WhatsApp está listo y conectado!');
 });
 
-client.initialize();
+// Comentamos la inicialización automática para controlarla desde el archivo principal
+// client.initialize();
 
 /**
  * Envía un medio a un chat
