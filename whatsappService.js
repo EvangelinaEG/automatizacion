@@ -2,17 +2,28 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const QRCode = require('qrcode');
 const path = require('path');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+
+puppeteer.use(StealthPlugin());
 
 const client = new Client({
     authStrategy: new LocalAuth({ clientId: "bot-ministraciones" }),
     puppeteer: {
         headless: true,
+        executablePath: process.env.CHROME_PATH || undefined,
+        protocolTimeout: 60000,
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
+            '--disable-blink-features=AutomationControlled',
+            '--no-default-browser-check',
+            '--no-first-run',
+            '--disable-infobars'
         ],
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
     },
 });
 
