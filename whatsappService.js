@@ -7,8 +7,6 @@ const client = new Client({
     authStrategy: new LocalAuth({ clientId: "bot-ministraciones" }),
     puppeteer: {
         headless: true,
-        // Detección automática del sistema operativo para usar el ejecutable correcto
-        ...(process.platform !== 'win32' ? { executablePath: '/usr/bin/chromium-browser' } : {}),
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
