@@ -1,64 +1,58 @@
-const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
-const QRCode = require('qrcode');
+const axios = require('axios');
+const fs = require('fs');
+const FormData = require('form-data');
 const path = require('path');
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const EventEmitter = require('events');
 
-puppeteer.use(StealthPlugin());
+// Mock del cliente para mantener compatibilidad con index.js
+class ClientMock extends EventEmitter {
+    constructor() {
+        super();
+    }
+    initialize() {
+        console.log('--- Green-API Client Initialized ---');
+        // Emitimos ready casi de inmediato ya que es una API REST
+        setTimeout(() => this.emit('ready'), 2000);
+    }
+}
 
-const client = new Client({
-    authStrategy: new LocalAuth({ clientId: "bot-ministraciones" }),
-    puppeteer: {
-        headless: true,
-        executablePath: process.env.CHROME_PATH || undefined,
-        protocolTimeout: 60000,
-        args: [
-            '--no-sandbox', 
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-gpu',
-            '--disable-blink-features=AutomationControlled',
-            '--no-default-browser-check',
-            '--no-first-run',
-            '--disable-infobars'
-        ],
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
-    },
-});
+const client = new ClientMock();
 
-client.on('qr', (qr) => {
-    console.log('--- NUEVO QR GENERADO ---');
-    qrcode.generate(qr, { small: true });
-    
-    // Guardar QR como imagen para el usuario
-    const qrPath = path.join(__dirname, 'qr.png');
-    QRCode.toFile(qrPath, qr, (err) => {
-        if (err) console.error('Error al guardar qr.png:', err);
-        else console.log('Imagen QR guardada en:', qrPath);
-    });
-});
-
-client.on('ready', () => {
-    console.log('¡Cliente de WhatsApp está listo y conectado!');
-});
-
-// Comentamos la inicialización automática para controlarla desde el archivo principal
-// client.initialize();
+const idInstance = process.env.GREEN_API_ID_INSTANCE;
+const apiTokenInstance = process.env.GREEN_API_TOKEN_INSTANCE;
 
 /**
- * Envía un medio a un chat
+ * Envía un medio a un chat usando Green-API (sendFileByUpload)
  * @param {string} chatId - El ID del chat o grupo (ej: 'xxxxxxxx@g.us')
  * @param {string} mediaPath - Ruta local del archivo
  */
 async function sendMediaToChat(chatId, mediaPath) {
     try {
-        console.log(`Preparando archivo para enviar: ${mediaPath}`);
-        const media = MessageMedia.fromFilePath(mediaPath);
-        await client.sendMessage(chatId, media);
-        console.log(`Enviado correctamente: ${mediaPath} a ${chatId}`);
+        console.log(`Green-API: Preparando envío de archivo: ${mediaPath} a ${chatId}`);
+        
+        const url = `https://api.green-api.com/waInstance${idInstance}/sendFileByUpload/${apiTokenInstance}`;
+        
+        const form = new FormData();
+        form.append('chatId', chatId);
+        form.append('file', fs.createReadStream(mediaPath));
+        form.append('fileName', path.basename(mediaPath));
+        // Si quieres que el audio se envíe como PTT (nota de voz), puedes habilitar esta opción si la API lo permite, 
+        // pero por defecto lo envía como archivo de audio.
+
+        const response = await axios.post(url, form, {
+            headers: {
+                ...form.getHeaders()
+            }
+        });
+
+        if (response.data && response.data.idMessage) {
+            console.log(`Green-API: Enviado con éxito. ID: ${response.data.idMessage}`);
+        } else {
+            console.log('Green-API: Respuesta inesperada:', response.data);
+        }
+
     } catch (error) {
-        console.error(`Error al enviar ${mediaPath}:`, error);
+        console.error(`Green-API Error al enviar ${mediaPath}:`, error.response?.data || error.message);
         throw error;
     }
 }

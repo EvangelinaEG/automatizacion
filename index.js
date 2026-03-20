@@ -4,8 +4,11 @@ const whatsappService = require('./whatsappService');
 const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
+const adminPanel = require('./admin-panel');
 
 const GROUP_ID = process.env.WHATSAPP_GROUP_ID;
+const ADMIN_USER = process.env.ADMIN_USER || 'admin';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
 const logFile = path.join(__dirname, 'app.log');
 const historyFile = path.join(__dirname, 'history.json');
 
@@ -113,9 +116,10 @@ async function processMinistrations(timeString) {
 
 log('Iniciando sistema de automatización...');
 whatsappService.client.initialize();
+adminPanel.startPanel();
 
 // Programación de las 9:00 am de Lunes a Viernes
-cron.schedule('0 9 * * 1-5', async () => {
+cron.schedule('0 9 * * *', async () => {
     log('Cron: Ejecutando tarea programada de las 9:00 am...');
     await processMinistrations('09-00');
 }, {
@@ -124,7 +128,7 @@ cron.schedule('0 9 * * 1-5', async () => {
 });
 
 // Programación de las 10:00 am de Lunes a Viernes
-cron.schedule('0 10 * * 1-5', async () => {
+cron.schedule('0 10 * * *', async () => {
     log('Cron: Ejecutando tarea programada de las 10:00 am...');
     await processMinistrations('10-00');
 }, {
@@ -142,26 +146,23 @@ cron.schedule('0 0 * * 0', () => {
 });
 
 whatsappService.client.on('ready', async () => {
-    const nowStr = new Date().toLocaleString("en-US", {timeZone: "America/Argentina/Buenos_Aires"});
-    const now = new Date(nowStr);
+    // Obtenemos la fecha y hora actual en la zona horaria de Argentina
+    const argentinaTime = new Date().toLocaleString("en-US", {timeZone: "America/Argentina/Buenos_Aires"});
+    const now = new Date(argentinaTime);
     const hour = now.getHours();
     const day = now.getDay(); // 0: Dom, 1: Lun, ..., 6: Sab
     
-    log(`Cliente de WhatsApp LISTO. Hora local: ${hour}hs. Día: ${day}`);
+    log(`Cliente de WhatsApp LISTO. Hora local (Argentina): ${hour}hs. Día: ${day}`);
     
     // Solo días de semana (1-5)
-    if (day >= 1 && day <= 5) {
-        if (hour >= 9) {
-            log('Iniciando verificación de recuperación para las 09-00...');
-            await processMinistrations('09-00');
-        }
-        if (hour >= 10) {
-            log('Iniciando verificación de recuperación para las 10-00...');
-            await processMinistrations('10-00');
-        }
-    } else {
-        log('Hoy es fin de semana, no se ejecutan recuperaciones automáticas.');
+    if (hour >= 9) {
+        log('Iniciando verificación de recuperación para las 09-00...');
+        await processMinistrations('09-00');
+    }
+    if (hour >= 10) {
+        log('Iniciando verificación de recuperación para las 10-00...');
+        await processMinistrations('10-00');
     }
 });
 
-log('Scheduler configurado (Lunes a Viernes, 09:00 y 10:00 - Timezone: America/Argentina/Buenos_Aires).');
+module.exports = { processMinistrations };
