@@ -8,6 +8,7 @@ const EventEmitter = require('events');
 class ClientMock extends EventEmitter {
     constructor() {
         super();
+        this.info = { pushname: 'Bot Admin', platform: 'Green-API' };
     }
     initialize() {
         console.log('--- Green-API Client Initialized ---');
@@ -32,17 +33,19 @@ async function sendMediaToChat(chatId, mediaPath) {
         
         const url = `https://api.green-api.com/waInstance${idInstance}/sendFileByUpload/${apiTokenInstance}`;
         
+        const fileBuffer = fs.readFileSync(mediaPath);
         const form = new FormData();
         form.append('chatId', chatId);
-        form.append('file', fs.createReadStream(mediaPath));
-        form.append('fileName', path.basename(mediaPath));
-        // Si quieres que el audio se envíe como PTT (nota de voz), puedes habilitar esta opción si la API lo permite, 
-        // pero por defecto lo envía como archivo de audio.
+        form.append('file', fileBuffer, {
+            filename: path.basename(mediaPath)
+        });
 
         const response = await axios.post(url, form, {
             headers: {
                 ...form.getHeaders()
-            }
+            },
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
         });
 
         if (response.data && response.data.idMessage) {
@@ -52,8 +55,9 @@ async function sendMediaToChat(chatId, mediaPath) {
         }
 
     } catch (error) {
-        console.error(`Green-API Error al enviar ${mediaPath}:`, error.response?.data || error.message);
-        throw error;
+        const errorDetail = error.response?.data || error.message;
+        console.error(`Green-API Error al enviar ${mediaPath}:`, JSON.stringify(errorDetail, null, 2));
+        throw new Error(`Green-API Error: ${JSON.stringify(errorDetail)}`);
     }
 }
 

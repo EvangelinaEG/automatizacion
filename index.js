@@ -13,9 +13,13 @@ const logFile = path.join(__dirname, 'app.log');
 const historyFile = path.join(__dirname, 'history.json');
 
 function log(message) {
-    const timestamp = new Date().toLocaleString("es-AR", {timeZone: "America/Argentina/Buenos_Aires"});
+    const now = new Date();
+    const timestamp = now.toLocaleString("es-AR", {
+        timeZone: "America/Argentina/Buenos_Aires",
+        hour12: false
+    });
     const logMessage = `[${timestamp}] ${message}\n`;
-    console.log(message);
+    console.log(`[${timestamp}] ${message}`);
     try {
         fs.appendFileSync(logFile, logMessage);
     } catch (e) {
@@ -146,21 +150,24 @@ cron.schedule('0 0 * * 0', () => {
 });
 
 whatsappService.client.on('ready', async () => {
-    // Obtenemos la fecha y hora actual en la zona horaria de Argentina
-    const argentinaTime = new Date().toLocaleString("en-US", {timeZone: "America/Argentina/Buenos_Aires"});
+    // Obtenemos la hora actual en Argentina
+    const argentinaTime = new Date().toLocaleString("en-US", { 
+        timeZone: "America/Argentina/Buenos_Aires",
+        hour12: false 
+    });
     const now = new Date(argentinaTime);
     const hour = now.getHours();
-    const day = now.getDay(); // 0: Dom, 1: Lun, ..., 6: Sab
+    const day = now.getDay(); 
     
-    log(`Cliente de WhatsApp LISTO. Hora local (Argentina): ${hour}hs. Día: ${day}`);
+    log(`Cliente de WhatsApp LISTO. Hora actual en Argentina: ${hour}hs. Día de la semana: ${day}`);
     
-    // Solo días de semana (1-5)
+    // Verificación de recuperación al arrancar
     if (hour >= 9) {
-        log('Iniciando verificación de recuperación para las 09-00...');
+        log('Verificando si la tarea de las 09-00 ya se envió hoy...');
         await processMinistrations('09-00');
     }
     if (hour >= 10) {
-        log('Iniciando verificación de recuperación para las 10-00...');
+        log('Verificando si la tarea de las 10-00 ya se envió hoy...');
         await processMinistrations('10-00');
     }
 });

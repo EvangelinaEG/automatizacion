@@ -68,10 +68,17 @@ async function downloadFile(fileId, fileName) {
     );
     
     return new Promise((resolve, reject) => {
-        res.data
-            .on('end', () => resolve(filePath))
-            .on('error', err => reject(err))
-            .pipe(dest);
+        dest.on('finish', () => {
+            dest.close();
+            resolve(filePath);
+        });
+        dest.on('error', err => {
+            fs.unlink(filePath, () => reject(err));
+        });
+        res.data.on('error', err => {
+            reject(err);
+        });
+        res.data.pipe(dest);
     });
 }
 
