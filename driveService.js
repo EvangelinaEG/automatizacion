@@ -105,13 +105,15 @@ async function downloadFilesFromFolder(dateString, timeString) {
     console.log(`Buscando subcarpeta con fecha ${dateString}...`);
     const dateFolder = await findFolder(dateString, mainFolderId);
     if (!dateFolder) {
-        throw new Error(`No se encontró la carpeta de la fecha "${dateString}" dentro de la carpeta principal.`);
+        console.log(`No se encontró la carpeta de la fecha "${dateString}".`);
+        return [];
     }
     
     console.log(`Buscando subcarpeta del horario ${timeString}...`);
     const timeFolder = await findFolder(timeString, dateFolder.id);
     if (!timeFolder) {
-        throw new Error(`No se encontró la carpeta del horario "${timeString}" dentro de ${dateString}.`);
+        console.log(`No se encontró la carpeta del horario "${timeString}" para la fecha ${dateString}.`);
+        return [];
     }
     
     const files = await getFilesInFolder(timeFolder.id);

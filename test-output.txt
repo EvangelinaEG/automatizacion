@@ -1,0 +1,7 @@
+﻿[dotenv@17.3.1] injecting env (7) from .env -- tip: ­ƒøá´©Å  run anywhere with `dotenvx run -- yourcommand`
+Iniciando prueba con: {
+  idInstance: '7107556895',
+  token: 'OK',
+  chatId: '120363406427870173@g.us'
+}
+Respuesta Exitosa: { idMessage: '3EB06BA7F05BCC15AF9820' }

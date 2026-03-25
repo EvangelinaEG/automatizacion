@@ -5,7 +5,7 @@ const path = require('path');
 const whatsappService = require('./whatsappService');
 
 const app = express();
-const PORT = process.env.PORT || 80; // Intentamos con el puerto 80 por defecto si es servidor
+const PORT = process.env.PORT || 3000; // Intentamos con el puerto 3000 por defecto para evitar EACCES en servidores
 
 // Credenciales para el panel
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
