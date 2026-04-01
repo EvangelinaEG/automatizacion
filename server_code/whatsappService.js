@@ -41,7 +41,7 @@ async function sendMediaToChat(chatId, mediaPath) {
 
         const uploadResponse = await axios.post(uploadUrl, uploadForm, {
             headers: {
-                ...uploadForm.getHeaders()
+                ...uploadForm.getHeaders(),
             },
             maxContentLength: Infinity,
             maxBodyLength: Infinity
@@ -62,11 +62,8 @@ async function sendMediaToChat(chatId, mediaPath) {
             fileName: path.basename(mediaPath)
         });
 
-        if (sendResponse.data && sendResponse.data.idMessage) {
-            console.log(`Green-API: Enviado con éxito. ID: ${sendResponse.data.idMessage}`);
-        } else {
-            console.log('Green-API: Respuesta inesperada:', sendResponse.data);
-        }
+        console.log(`Green-API Response for ${path.basename(mediaPath)}:`, JSON.stringify(sendResponse.data, null, 2));
+        return sendResponse.data;
 
     } catch (error) {
         const errorDetail = error.response?.data || error.message;
