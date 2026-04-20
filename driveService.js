@@ -40,7 +40,7 @@ async function findFolder(name, parentId = null) {
 async function getFilesInFolder(folderId) {
     const response = await drive.files.list({
         q: `'${folderId}' in parents and mimeType!='application/vnd.google-apps.folder' and trashed=false`,
-        fields: 'files(id, name)',
+        fields: 'files(id, name, size, webViewLink)',
         spaces: 'drive',
         supportsAllDrives: true,
         includeItemsFromAllDrives: true,
@@ -123,19 +123,31 @@ async function downloadFilesFromFolder(dateString, timeString) {
     }
     
     console.log(`Iniciando descarga de ${files.length} archivo(s)...`);
-    const downloadedPaths = [];
+    const downloadedResults = [];
     for (const file of files) {
-        console.log(`Descargando ${file.name}...`);
+        console.log(`Procesando ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)...`);
         try {
-            const filePath = await downloadFile(file.id, file.name);
-            downloadedPaths.push(filePath);
+            // Solo descargamos si el tamaño es razonable para enviar por WhatsApp (< 100MB)
+            // Pero igual retornamos la info para que el bot decida
+            let filePath = null;
+            if (parseInt(file.size) < 100 * 1024 * 1024) {
+                filePath = await downloadFile(file.id, file.name);
+            } else {
+                console.log(`Archivo demasiado grande para descargar: ${file.name}`);
+            }
+
+            downloadedResults.push({
+                path: filePath,
+                name: file.name,
+                size: parseInt(file.size),
+                link: file.webViewLink
+            });
         } catch (err) {
-            console.error(`Error al descargar ${file.name}:`, err.message);
-            // Continuamos con los demás archivos
+            console.error(`Error al procesar ${file.name}:`, err.message);
         }
     }
     
-    return downloadedPaths;
+    return downloadedResults;
 }
 
 module.exports = {
