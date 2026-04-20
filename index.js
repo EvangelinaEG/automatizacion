@@ -15,6 +15,9 @@ const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
 const logFile = path.join(__dirname, 'app.log');
 const historyFile = path.join(__dirname, 'history.json');
 
+// Bloqueo de concurrencia para evitar procesos duplicados
+const activeTasks = new Set();
+
 function log(message) {
     const now = new Date();
     const timestamp = now.toLocaleString("es-AR", {
@@ -79,7 +82,13 @@ async function processMinistrations(timeString, overrideDate = null) {
         return;
     }
 
+    if (activeTasks.has(timeString)) {
+        log(`Bloqueo de seguridad: Tarea ${timeString} ya está en ejecución. Abortando duplicado.`);
+        return;
+    }
+
     try {
+        activeTasks.add(timeString);
         log(`--- Iniciando proceso para ${dateString} a las ${timeString} ---`);
         
         const downloadedFiles = await driveService.downloadFilesFromFolder(dateString, timeString);
@@ -156,6 +165,8 @@ async function processMinistrations(timeString, overrideDate = null) {
         
     } catch (error) {
         log(`Error fatal en el proceso de las ${timeString}: ${error.message}`);
+    } finally {
+        activeTasks.delete(timeString);
     }
 }
 
